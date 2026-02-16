@@ -10,19 +10,37 @@ class WebRequestHandler(BaseHTTPRequestHandler):
         return dict(parse_qsl(self.url().query))
 
     def do_GET(self):
-        self.send_response(200)
-        self.send_header("Content-Type", "text/html")
-        self.end_headers()
-        self.wfile.write(self.get_response().encode("utf-8"))
+        path = self.url().path
 
-    def get_response(self):
-        return f"""
-    <h1> Hola Web </h1>
-    <p> URL Parse Result : {self.url()}         </p>
-    <p> Path Original: {self.path}         </p>
-    <p> Headers: {self.headers}      </p>
-    <p> Query: {self.query_data()}   </p>
-"""
+        if path == "/":
+            try:
+                with open("home.html", "r", encoding="utf-8") as f:
+                    content = f.read()
+
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(content.encode("utf-8"))
+
+            except FileNotFoundError:
+                self.send_error(500, "home.html no encontrado")
+
+        else:
+            self.send_error(404, "Not Found")
+
+    # def get_response(self):
+    #    split_url = self.url().path.split("/")
+    #
+    #   proyecto = split_url[2] if len(split_url) > 2 else "Desconocido"
+    #   autor = self.query_data().get("autor", "Desconocido")
+    #
+    #    return f"""
+    #    <h1>Proyecto: {proyecto} Autor: {autor}</h1>
+    #    p>URL Parse Result : {self.url()}</p>
+    #    <p>Path Original: {self.path}</p>
+    #    <p>Headers: {self.headers}</p>
+    #    <p>Query: {self.query_data()}</p>
+    #    """
 
 
 if __name__ == "__main__":
